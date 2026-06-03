@@ -22,7 +22,9 @@ CREATE TYPE "test_result_status_enum" AS ENUM (
 
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY,
-  "username" varchar NOT NULL,
+  "name" text NOT NULL,
+  "email" text UNIQUE NOT NULL,
+  "password_hash" text NOT NULL,
   "role" varchar NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now())
 );

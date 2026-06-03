@@ -7,23 +7,35 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/joho/godotenv/autoload"
 
+	"tms-platform/internal/auth"
 	"tms-platform/internal/database"
+	"tms-platform/internal/user"
 )
 
 type Server struct {
 	port int
-
-	db database.Service
+	db   database.Service
+	auth *auth.AuthHandler
 }
 
 func NewServer() *http.Server {
 	port, _ := strconv.Atoi(os.Getenv("PORT"))
+
+	db := database.New()
+
+	// sqlx wraps the existing *sql.DB pool from database.Service — no second connection.
+	dbx := sqlx.NewDb(db.DB(), "pgx")
+
+	jwtMgr := auth.NewJWTManager([]byte(os.Getenv("JWT_SECRET")), 30*time.Minute)
+	authSvc := auth.NewAuthService(user.NewUserRepository(dbx), jwtMgr)
+
 	NewServer := &Server{
 		port: port,
-
-		db: database.New(),
+		db:   db,
+		auth: auth.NewAuthHandler(authSvc),
 	}
 
 	// Declare Server config
