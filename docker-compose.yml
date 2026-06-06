@@ -6,54 +6,41 @@ services:
       target: prod
     restart: unless-stopped
     ports:
-      - ${PORT}:${PORT}
-    environment:
-      APP_ENV: ${APP_ENV}
-      PORT: ${PORT}
-      BLUEPRINT_DB_HOST: ${BLUEPRINT_DB_HOST}
-      BLUEPRINT_DB_PORT: ${BLUEPRINT_DB_PORT}
-      BLUEPRINT_DB_DATABASE: ${BLUEPRINT_DB_DATABASE}
-      BLUEPRINT_DB_USERNAME: ${BLUEPRINT_DB_USERNAME}
-      BLUEPRINT_DB_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
-      BLUEPRINT_DB_SCHEMA: ${BLUEPRINT_DB_SCHEMA}
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
     depends_on:
-      psql_bp:
+      postgres:
         condition: service_healthy
     networks:
-      - blueprint
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: frontend
-    restart: unless-stopped
-    depends_on:
-      - app
-    ports:
-      - 5173:5173
-    networks:
-      - blueprint
-  psql_bp:
+      - app_network
+
+  postgres:
     image: postgres:latest
     restart: unless-stopped
+    command: ["postgres", "-c", "log_line_prefix="]
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: ${BLUEPRINT_DB_DATABASE}
-      POSTGRES_USER: ${BLUEPRINT_DB_USERNAME}
-      POSTGRES_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${BLUEPRINT_DB_PORT}:5432"
+      - "${DB_PORT}:5432"
     volumes:
-      - psql_volume_bp:/var/lib/postgresql/data
+      - postgres_volume:/var/lib/postgresql
+      - ./migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${BLUEPRINT_DB_USERNAME} -d ${BLUEPRINT_DB_DATABASE}'"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 3
       start_period: 15s
     networks:
-      - blueprint
+      - app_network
 
 volumes:
-  psql_volume_bp:
+  postgres_volume:
+
 networks:
-  blueprint:
+  app_network:

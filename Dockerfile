@@ -1,4 +1,4 @@
-FROM golang:1.24.4-alpine AS build
+FROM golang:1.26.3-alpine AS build
 
 WORKDIR /app
 
@@ -12,20 +12,20 @@ RUN go build -o main cmd/api/main.go
 FROM alpine:3.20.1 AS prod
 WORKDIR /app
 COPY --from=build /app/main /app/main
-EXPOSE ${PORT}
+
+EXPOSE 8080
 CMD ["./main"]
 
-
-FROM node:20 AS frontend_builder
-WORKDIR /frontend
-
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/. .
-RUN npm run build
-
-FROM node:23-slim AS frontend
-RUN npm install -g serve
-COPY --from=frontend_builder /frontend/dist /app/dist
-EXPOSE 5173
-CMD ["serve", "-s", "/app/dist", "-l", "5173"]
+# FROM node:20 AS frontend_builder
+# WORKDIR /frontend
+#
+# COPY frontend/package*.json ./
+# RUN npm install
+# COPY frontend/. .
+# RUN npm run build
+#
+# FROM node:23-slim AS frontend
+# RUN npm install -g serve
+# COPY --from=frontend_builder /frontend/dist /app/dist
+# EXPOSE 5173
+# CMD ["serve", "-s", "/app/dist", "-l", "5173"]
