@@ -2,11 +2,10 @@ package user
 
 import (
 	"context"
+	"tms-platform/internal/model"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-
-	"tms-platform/internal/model"
 )
 
 type UserRepository struct {
