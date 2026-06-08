@@ -12,6 +12,7 @@ import (
 
 	"tms-platform/internal/auth"
 	"tms-platform/internal/database"
+	"tms-platform/internal/folder"
 	"tms-platform/internal/project"
 	"tms-platform/internal/user"
 )
@@ -22,6 +23,7 @@ type Server struct {
 	jwt     *auth.JWTManager
 	auth    *auth.AuthHandler
 	project *project.Handler
+	folder  *folder.Handler
 }
 
 func NewServer() *http.Server {
@@ -35,6 +37,7 @@ func NewServer() *http.Server {
 	authSvc := auth.NewAuthService(user.NewUserRepository(dbx), jwtMgr)
 
 	projectSvc := project.NewService(project.NewRepository(dbx))
+	folderSvc := folder.NewService(folder.NewRepository(dbx))
 
 	NewServer := &Server{
 		port:    port,
@@ -42,6 +45,7 @@ func NewServer() *http.Server {
 		jwt:     jwtMgr,
 		auth:    auth.NewAuthHandler(authSvc),
 		project: project.NewHandler(projectSvc),
+		folder:  folder.NewHandler(folderSvc),
 	}
 
 	server := &http.Server{

@@ -30,7 +30,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Route("/api/v1/projects", func(r chi.Router) {
 		r.Use(s.jwt.Middleware)
-		s.project.RegisterRoutes(r)
+		r.Post("/", s.project.Create)
+		r.Get("/", s.project.List)
+		r.Get("/{id}", s.project.Get)
 	})
 
 	return r

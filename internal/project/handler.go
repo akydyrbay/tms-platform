@@ -20,12 +20,6 @@ func NewHandler(svc *Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-func (h *Handler) RegisterRoutes(r chi.Router) {
-	r.Post("/", h.Create)
-	r.Get("/", h.List)
-	r.Get("/{id}", h.Get)
-}
-
 type createRequest struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
