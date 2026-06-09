@@ -14,6 +14,7 @@ import (
 	"tms-platform/internal/database"
 	"tms-platform/internal/folder"
 	"tms-platform/internal/project"
+	"tms-platform/internal/suite"
 	"tms-platform/internal/testcase"
 	"tms-platform/internal/user"
 )
@@ -26,6 +27,7 @@ type Server struct {
 	project  *project.Handler
 	folder   *folder.Handler
 	testcase *testcase.Handler
+	suite    *suite.Handler
 }
 
 func NewServer() *http.Server {
@@ -41,6 +43,7 @@ func NewServer() *http.Server {
 	projectSvc := project.NewService(project.NewRepository(dbx))
 	folderSvc := folder.NewService(folder.NewRepository(dbx))
 	testcaseSvc := testcase.NewService(testcase.NewRepository(dbx))
+	suiteSvc := suite.NewService(suite.NewRepository(dbx))
 
 	NewServer := &Server{
 		port:     port,
@@ -50,6 +53,7 @@ func NewServer() *http.Server {
 		project:  project.NewHandler(projectSvc),
 		folder:   folder.NewHandler(folderSvc),
 		testcase: testcase.NewHandler(testcaseSvc),
+		suite:    suite.NewHandler(suiteSvc),
 	}
 
 	server := &http.Server{

@@ -51,6 +51,15 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Get("/{id}/versions/{number}", s.testcase.GetVersion)
 	})
 
+	r.Route("/api/v1/suites", func(r chi.Router) {
+		r.Use(s.jwt.Middleware)
+		r.Post("/", s.suite.Create)
+		r.Get("/", s.suite.List)
+		r.Get("/{id}", s.suite.Get)
+		r.Post("/{id}/cases", s.suite.AddCase)
+		r.Delete("/{id}/cases/{caseID}", s.suite.RemoveCase)
+	})
+
 	return r
 }
 
