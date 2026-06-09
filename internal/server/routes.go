@@ -35,6 +35,22 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Get("/{id}", s.project.Get)
 	})
 
+	r.Route("/api/v1/folders", func(r chi.Router) {
+		r.Use(s.jwt.Middleware)
+		r.Post("/", s.folder.Create)
+		r.Get("/", s.folder.Tree)
+	})
+
+	r.Route("/api/v1/test-cases", func(r chi.Router) {
+		r.Use(s.jwt.Middleware)
+		r.Post("/", s.testcase.Create)
+		r.Get("/", s.testcase.List)
+		r.Get("/{id}", s.testcase.GetCurrent)
+		r.Put("/{id}", s.testcase.Edit)
+		r.Get("/{id}/versions", s.testcase.History)
+		r.Get("/{id}/versions/{number}", s.testcase.GetVersion)
+	})
+
 	return r
 }
 

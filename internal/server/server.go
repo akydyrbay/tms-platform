@@ -14,16 +14,18 @@ import (
 	"tms-platform/internal/database"
 	"tms-platform/internal/folder"
 	"tms-platform/internal/project"
+	"tms-platform/internal/testcase"
 	"tms-platform/internal/user"
 )
 
 type Server struct {
-	port    int
-	db      database.Service
-	jwt     *auth.JWTManager
-	auth    *auth.AuthHandler
-	project *project.Handler
-	folder  *folder.Handler
+	port     int
+	db       database.Service
+	jwt      *auth.JWTManager
+	auth     *auth.AuthHandler
+	project  *project.Handler
+	folder   *folder.Handler
+	testcase *testcase.Handler
 }
 
 func NewServer() *http.Server {
@@ -38,14 +40,16 @@ func NewServer() *http.Server {
 
 	projectSvc := project.NewService(project.NewRepository(dbx))
 	folderSvc := folder.NewService(folder.NewRepository(dbx))
+	testcaseSvc := testcase.NewService(testcase.NewRepository(dbx))
 
 	NewServer := &Server{
-		port:    port,
-		db:      db,
-		jwt:     jwtMgr,
-		auth:    auth.NewAuthHandler(authSvc),
-		project: project.NewHandler(projectSvc),
-		folder:  folder.NewHandler(folderSvc),
+		port:     port,
+		db:       db,
+		jwt:      jwtMgr,
+		auth:     auth.NewAuthHandler(authSvc),
+		project:  project.NewHandler(projectSvc),
+		folder:   folder.NewHandler(folderSvc),
+		testcase: testcase.NewHandler(testcaseSvc),
 	}
 
 	server := &http.Server{
