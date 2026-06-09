@@ -13,6 +13,7 @@ import (
 	"tms-platform/internal/auth"
 	"tms-platform/internal/database"
 	"tms-platform/internal/folder"
+	"tms-platform/internal/integration"
 	"tms-platform/internal/project"
 	"tms-platform/internal/suite"
 	"tms-platform/internal/testcase"
@@ -20,15 +21,16 @@ import (
 )
 
 type Server struct {
-	port     int
-	db       database.Service
-	jwt      *auth.JWTManager
-	auth     *auth.AuthHandler
-	project  *project.Handler
-	folder   *folder.Handler
-	testcase *testcase.Handler
-	suite    *suite.Handler
-	testrun  *testrun.Handler
+	port        int
+	db          database.Service
+	jwt         *auth.JWTManager
+	auth        *auth.AuthHandler
+	project     *project.Handler
+	folder      *folder.Handler
+	testcase    *testcase.Handler
+	suite       *suite.Handler
+	testrun     *testrun.Handler
+	integration *integration.Handler
 }
 
 func NewServer() *http.Server {
@@ -46,17 +48,19 @@ func NewServer() *http.Server {
 	testcaseSvc := testcase.NewService(testcase.NewRepository(dbx))
 	suiteSvc := suite.NewService(suite.NewRepository(dbx))
 	testrunSvc := testrun.NewService(testrun.NewRepository(dbx))
+	integrationSvc := integration.NewService(integration.NewRepository(dbx))
 
 	NewServer := &Server{
-		port:     port,
-		db:       db,
-		jwt:      jwtMgr,
-		auth:     auth.NewAuthHandler(authSvc),
-		project:  project.NewHandler(projectSvc),
-		folder:   folder.NewHandler(folderSvc),
-		testcase: testcase.NewHandler(testcaseSvc),
-		suite:    suite.NewHandler(suiteSvc),
-		testrun:  testrun.NewHandler(testrunSvc),
+		port:        port,
+		db:          db,
+		jwt:         jwtMgr,
+		auth:        auth.NewAuthHandler(authSvc),
+		project:     project.NewHandler(projectSvc),
+		folder:      folder.NewHandler(folderSvc),
+		testcase:    testcase.NewHandler(testcaseSvc),
+		suite:       suite.NewHandler(suiteSvc),
+		testrun:     testrun.NewHandler(testrunSvc),
+		integration: integration.NewHandler(integrationSvc),
 	}
 
 	server := &http.Server{
