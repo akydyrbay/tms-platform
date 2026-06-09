@@ -15,11 +15,11 @@ type UserRepository interface {
 }
 
 type AuthService struct {
-	repo UserRepository
+	repo *Repository
 	jwt  *JWTManager
 }
 
-func NewAuthService(repo UserRepository, jwt *JWTManager) *AuthService {
+func NewAuthService(repo *Repository, jwt *JWTManager) *AuthService {
 	return &AuthService{repo: repo, jwt: jwt}
 }
 

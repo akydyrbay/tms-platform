@@ -60,6 +60,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Delete("/{id}/cases/{caseID}", s.suite.RemoveCase)
 	})
 
+	r.Route("/api/v1/test_runs", func(r chi.Router) {
+		r.Use(s.jwt.Middleware)
+		r.Post("/", s.testrun.Create)
+		r.Get("/", s.testrun.List)
+		r.Get("/{id}", s.testrun.Get)
+		r.Patch("/{id}", s.testrun.SetStatus)
+		r.Get("/{id}/results", s.testrun.Results)
+		r.Post("/{id}/results/{caseID}", s.testrun.Mark)
+		r.Get("/{id}/stats", s.testrun.Stats)
+	})
 	return r
 }
 

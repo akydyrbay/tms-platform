@@ -64,7 +64,6 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (*model.Folder, er
 	return f, nil
 }
 
-// Tree returns the project's folders as a nested forest (roots with children).
 func (s *Service) Tree(ctx context.Context, projectID string) ([]*model.Folder, error) {
 	flat, err := s.repo.ListByProject(ctx, projectID)
 	if err != nil {

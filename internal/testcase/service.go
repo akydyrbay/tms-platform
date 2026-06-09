@@ -25,8 +25,6 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-// Content is the full set of versioned fields for a test case. An edit supplies
-// a complete new Content; it never patches an existing version in place.
 type Content struct {
 	Title          string
 	Description    *string
@@ -47,7 +45,6 @@ type CreateInput struct {
 	Content
 }
 
-// Create writes the identity row, version 1 and its steps in one transaction.
 func (s *Service) Create(ctx context.Context, in CreateInput) (*model.TestCaseVersion, error) {
 	if in.ProjectID == "" {
 		return nil, ErrProjectRequired
@@ -69,8 +66,6 @@ func (s *Service) Create(ctx context.Context, in CreateInput) (*model.TestCaseVe
 	return s.repo.GetVersion(ctx, c.ID, v.VersionNumber)
 }
 
-// Edit inserts a new version holding the full updated content; the previous
-// version and its steps are left untouched.
 func (s *Service) Edit(ctx context.Context, caseID, editedBy string, content Content) (*model.TestCaseVersion, error) {
 	if strings.TrimSpace(content.Title) == "" {
 		return nil, ErrTitleRequired

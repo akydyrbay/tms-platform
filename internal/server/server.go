@@ -16,7 +16,7 @@ import (
 	"tms-platform/internal/project"
 	"tms-platform/internal/suite"
 	"tms-platform/internal/testcase"
-	"tms-platform/internal/user"
+	"tms-platform/internal/testrun"
 )
 
 type Server struct {
@@ -28,6 +28,7 @@ type Server struct {
 	folder   *folder.Handler
 	testcase *testcase.Handler
 	suite    *suite.Handler
+	testrun  *testrun.Handler
 }
 
 func NewServer() *http.Server {
@@ -38,12 +39,13 @@ func NewServer() *http.Server {
 	dbx := sqlx.NewDb(db.DB(), "pgx")
 
 	jwtMgr := auth.NewJWTManager([]byte(os.Getenv("JWT_SECRET")), 30*time.Minute)
-	authSvc := auth.NewAuthService(user.NewUserRepository(dbx), jwtMgr)
+	authSvc := auth.NewAuthService(auth.NewRepository(dbx), jwtMgr)
 
 	projectSvc := project.NewService(project.NewRepository(dbx))
 	folderSvc := folder.NewService(folder.NewRepository(dbx))
 	testcaseSvc := testcase.NewService(testcase.NewRepository(dbx))
 	suiteSvc := suite.NewService(suite.NewRepository(dbx))
+	testrunSvc := testrun.NewService(testrun.NewRepository(dbx))
 
 	NewServer := &Server{
 		port:     port,
@@ -54,6 +56,7 @@ func NewServer() *http.Server {
 		folder:   folder.NewHandler(folderSvc),
 		testcase: testcase.NewHandler(testcaseSvc),
 		suite:    suite.NewHandler(suiteSvc),
+		testrun:  testrun.NewHandler(testrunSvc),
 	}
 
 	server := &http.Server{

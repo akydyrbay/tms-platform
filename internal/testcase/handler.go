@@ -177,8 +177,6 @@ func parseID(w http.ResponseWriter, r *http.Request) (string, bool) {
 	return id, true
 }
 
-// writeServiceError maps service errors to HTTP responses. It returns true when
-// a response was written (i.e. err != nil).
 func writeServiceError(w http.ResponseWriter, err error) bool {
 	switch {
 	case err == nil:

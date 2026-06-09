@@ -18,8 +18,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{db: db}
 }
 
-// CreateCase writes the identity row, version 1 and that version's steps in one
-// transaction. v.VersionNumber is set to 1.
 func (r *Repository) CreateCase(ctx context.Context, c *model.TestCase, v *model.TestCaseVersion) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -45,8 +43,6 @@ func (r *Repository) CreateCase(ctx context.Context, c *model.TestCase, v *model
 	return tx.Commit()
 }
 
-// AddVersion inserts the next version (max+1) and its steps in one transaction.
-// The previous version and its steps are left untouched.
 func (r *Repository) AddVersion(ctx context.Context, v *model.TestCaseVersion) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -111,8 +107,6 @@ func (r *Repository) GetCase(ctx context.Context, id string) (*model.TestCase, e
 	return &c, nil
 }
 
-// GetVersion loads a single version with its steps. If versionNumber <= 0 the
-// current (highest) version is returned.
 func (r *Repository) GetVersion(ctx context.Context, caseID string, versionNumber int) (*model.TestCaseVersion, error) {
 	q := `
 		SELECT id::text AS id, test_case_id::text AS test_case_id, version_number, title,
@@ -149,7 +143,6 @@ func (r *Repository) GetVersion(ctx context.Context, caseID string, versionNumbe
 	return &v, nil
 }
 
-// ListByProject returns every case in a project with its current version.
 func (r *Repository) ListByProject(ctx context.Context, projectID string) ([]model.TestCaseSummary, error) {
 	const q = `
 		SELECT tc.id::text AS test_case_id, tc.folder_id::text AS folder_id,

@@ -1,4 +1,4 @@
-package user
+package auth
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepository struct {
+type Repository struct {
 	db *sqlx.DB
 }
 
-func NewUserRepository(db *sqlx.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewRepository(db *sqlx.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r *UserRepository) CreateWithPassword(ctx context.Context, name, email, passwordHash string) (*model.User, error) {
+func (r *Repository) CreateWithPassword(ctx context.Context, name, email, passwordHash string) (*model.User, error) {
 	const q = `
 		INSERT INTO users (id, name, email, role, password_hash, created_at)
 		VALUES ($1, $2, $3, $4, $5, now())
@@ -30,7 +30,7 @@ func (r *UserRepository) CreateWithPassword(ctx context.Context, name, email, pa
 	return &u, nil
 }
 
-func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	const q = `SELECT id, name, email, role, password_hash, created_at FROM users WHERE email = $1`
 
 	u := model.User{}
