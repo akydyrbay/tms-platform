@@ -1,52 +1,59 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { clearToken, getToken, type Project } from './api'
+import Login from './components/Login'
+import Projects from './components/Projects'
+import Folders from './components/Folders'
+import TestCases from './components/TestCases'
+import Suites from './components/Suites'
+import Runs from './components/Runs'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+const TABS = ['Folders', 'Test Cases', 'Suites', 'Runs'] as const
+type Tab = (typeof TABS)[number]
 
-  const fetchData = () => {
-    fetch(`http://localhost:${import.meta.env.VITE_PORT}/`)
-      .then(response => response.text())
-      .then(data => setMessage(data))
-      .catch(error => console.error('Error fetching data:', error))
+export default function App() {
+  const [authed, setAuthed] = useState(!!getToken())
+  const [project, setProject] = useState<Project | null>(null)
+  const [tab, setTab] = useState<Tab>('Folders')
+
+  if (!authed) {
+    return <Login onLogin={() => setAuthed(true)} />
   }
-  const [message, setMessage] = useState<string>('')
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="app">
+      <header>
+        <h1>TMS</h1>
+        {project && <span className="current">{project.name}</span>}
+        <button
+          className="link logout"
+          onClick={() => {
+            clearToken()
+            setAuthed(false)
+            setProject(null)
+          }}
+        >
+          Logout
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <button onClick={fetchData}>
-        Click to fetch from Go server
-      </button>
-      {message && (
-        <div>
-          <h2>Server Response:</h2>
-          <p>{message}</p>
-        </div>
+      </header>
+
+      <Projects selectedId={project?.id} onSelect={setProject} />
+
+      {project && (
+        <>
+          <nav className="tabs">
+            {TABS.map((t) => (
+              <button key={t} className={t === tab ? 'tab active' : 'tab'} onClick={() => setTab(t)}>
+                {t}
+              </button>
+            ))}
+          </nav>
+          {tab === 'Folders' && <Folders projectId={project.id} />}
+          {tab === 'Test Cases' && <TestCases projectId={project.id} />}
+          {tab === 'Suites' && <Suites projectId={project.id} />}
+          {tab === 'Runs' && <Runs projectId={project.id} />}
+        </>
       )}
-    </>
+    </div>
   )
 }
-
-export default App
