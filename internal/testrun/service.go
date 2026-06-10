@@ -99,3 +99,72 @@ func (s *Service) Stats(ctx context.Context, runID string) (model.TestRunStats, 
 	}
 	return s.repo.Stats(ctx, runID)
 }
+
+type CIEntry struct {
+	TestCaseID string
+	Status     string
+	Comment    *string
+}
+
+type CIImportInput struct {
+	Source      string
+	PipelineURL *string
+	Results     []CIEntry
+	ImportedBy  string
+}
+
+type CIImportSummary struct {
+	RunID    string             `json:"run_id"`
+	Source   string             `json:"source"`
+	Imported int                `json:"imported"`
+	Skipped  int                `json:"skipped"` // cases not part of this run
+	Stats    model.TestRunStats `json:"stats"`
+}
+
+func (s *Service) ImportCI(ctx context.Context, runID string, in CIImportInput) (*CIImportSummary, error) {
+	if _, err := s.repo.GetRun(ctx, runID); err != nil {
+		return nil, err
+	}
+	source := strings.TrimSpace(in.Source)
+	if source == "" {
+		source = "gitlab-ci"
+	}
+
+	summary := &CIImportSummary{RunID: runID, Source: source}
+	executedBy := &in.ImportedBy
+
+	for _, e := range in.Results {
+		if !resultStatuses[e.Status] {
+			return nil, ErrInvalidStatus
+		}
+		comment := ciComment(source, in.PipelineURL, e.Comment)
+		_, err := s.repo.MarkResult(ctx, runID, e.TestCaseID, e.Status, comment, executedBy)
+		if errors.Is(err, ErrResultNotFound) {
+			summary.Skipped++
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		summary.Imported++
+	}
+
+	stats, err := s.repo.Stats(ctx, runID)
+	if err != nil {
+		return nil, err
+	}
+	summary.Stats = stats
+	return summary, nil
+}
+
+func ciComment(source string, pipelineURL, comment *string) *string {
+	prefix := "[" + source
+	if pipelineURL != nil && strings.TrimSpace(*pipelineURL) != "" {
+		prefix += " " + strings.TrimSpace(*pipelineURL)
+	}
+	prefix += "]"
+	if comment != nil && strings.TrimSpace(*comment) != "" {
+		prefix += " " + strings.TrimSpace(*comment)
+	}
+	return &prefix
+}

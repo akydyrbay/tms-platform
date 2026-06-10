@@ -73,6 +73,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Get("/{id}/results", s.testrun.Results)
 		r.With(writer).Post("/{id}/results/{caseID}", s.testrun.Mark)
 		r.Get("/{id}/stats", s.testrun.Stats)
+		r.With(writer).Post("/{id}/ci-import", s.testrun.CIImport)
 	})
 
 	r.Route("/api/v1/run-results", func(r chi.Router) {

@@ -144,6 +144,57 @@ func (h *Handler) SetStatus(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteJSON(w, http.StatusOK, run)
 }
 
+type ciImportRequest struct {
+	Source      string  `json:"source"`
+	PipelineURL *string `json:"pipeline_url"`
+	Results     []struct {
+		TestCaseID string  `json:"test_case_id"`
+		Status     string  `json:"status"`
+		Comment    *string `json:"comment"`
+	} `json:"results"`
+}
+
+// CIImport ingests a CI/CD pipeline result report (e.g. GitLab CI) and applies
+// pass/fail outcomes to the run's cases.
+func (h *Handler) CIImport(w http.ResponseWriter, r *http.Request) {
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		httputil.WriteError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	runID, ok := parseID(w, r, "id")
+	if !ok {
+		return
+	}
+	var req ciImportRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		httputil.WriteError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	entries := make([]CIEntry, 0, len(req.Results))
+	for _, e := range req.Results {
+		if _, err := uuid.Parse(e.TestCaseID); err != nil {
+			httputil.WriteError(w, http.StatusBadRequest, "invalid test_case_id in results")
+			return
+		}
+		entries = append(entries, CIEntry{
+			TestCaseID: e.TestCaseID,
+			Status:     e.Status,
+			Comment:    e.Comment,
+		})
+	}
+	summary, err := h.svc.ImportCI(r.Context(), runID, CIImportInput{
+		Source:      req.Source,
+		PipelineURL: req.PipelineURL,
+		Results:     entries,
+		ImportedBy:  userID,
+	})
+	if writeError(w, err) {
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, summary)
+}
+
 func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	id, ok := parseID(w, r, "id")
 	if !ok {
