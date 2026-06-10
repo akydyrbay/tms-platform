@@ -202,17 +202,17 @@ export const api = {
     req<Suite>('DELETE', `/suites/${suiteId}/cases/${caseId}`),
 
   listRuns: (projectId: string) =>
-    req<Run[]>('GET', `/runs?project_id=${projectId}`),
-  getRun: (id: string) => req<Run>('GET', `/runs/${id}`),
+    req<Run[]>('GET', `/test-runs?project_id=${projectId}`),
+  getRun: (id: string) => req<Run>('GET', `/test-runs/${id}`),
   createRun: (suiteId: string, name: string) =>
-    req<Run>('POST', '/runs', { suite_id: suiteId, name }),
+    req<Run>('POST', '/test-runs', { suite_id: suiteId, name }),
   listResults: (runId: string) =>
-    req<RunResult[]>('GET', `/runs/${runId}/results`),
+    req<RunResult[]>('GET', `/test-runs/${runId}/results`),
   markResult: (runId: string, caseId: string, status: string, comment?: string) =>
-    req<RunResult>('POST', `/runs/${runId}/results/${caseId}`, { status, comment }),
+    req<RunResult>('POST', `/test-runs/${runId}/results/${caseId}`, { status, comment }),
   setRunStatus: (runId: string, status: string) =>
-    req<Run>('PATCH', `/runs/${runId}`, { status }),
-  getStats: (runId: string) => req<RunStats>('GET', `/runs/${runId}/stats`),
+    req<Run>('PATCH', `/test-runs/${runId}`, { status }),
+  getStats: (runId: string) => req<RunStats>('GET', `/test-runs/${runId}/stats`),
 
   listBugs: (resultId: string) => req<Bug[]>('GET', `/run-results/${resultId}/bugs`),
   attachBug: (resultId: string, tracker: string, externalId: string, url?: string) =>
