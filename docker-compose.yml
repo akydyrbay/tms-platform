@@ -1,9 +1,9 @@
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-      target: prod
+      target: backend
     restart: unless-stopped
     ports:
       - "${PORT}:${PORT}"
@@ -15,10 +15,26 @@ services:
     networks:
       - app_network
 
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:${PORT}
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
   postgres:
     image: postgres:latest
     restart: unless-stopped
-    command: ["postgres", "-c", "log_line_prefix="]
+    command:
+      ["postgres", "-c", "log_line_prefix="]
     env_file:
       - .env
     environment:
@@ -31,7 +47,8 @@ services:
       - postgres_volume:/var/lib/postgresql
       - ./migrations/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test:
+        ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 3
