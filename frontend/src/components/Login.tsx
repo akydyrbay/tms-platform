@@ -6,6 +6,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('qa')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -15,7 +16,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     setBusy(true)
     try {
       if (mode === 'register') {
-        await api.register(name, email, password)
+        await api.register(name, email, password, role)
       }
       const { access_token } = await api.login(email, password)
       setToken(access_token)
@@ -34,6 +35,15 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
         <p className="muted">{mode === 'login' ? 'Sign in' : 'Create an account'}</p>
         {mode === 'register' && (
           <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+        )}
+        {mode === 'register' && (
+          <select value={role} onChange={(e) => setRole(e.target.value)} title="Access role">
+            <option value="viewer">Viewer</option>
+            <option value="developer">Developer</option>
+            <option value="qa">QA</option>
+            <option value="qa_lead">QA Lead</option>
+            <option value="admin">Admin</option>
+          </select>
         )}
         <input
           type="email"

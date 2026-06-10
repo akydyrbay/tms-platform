@@ -16,14 +16,14 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) CreateWithPassword(ctx context.Context, name, email, passwordHash string) (*model.User, error) {
+func (r *Repository) CreateWithPassword(ctx context.Context, name, email, role, passwordHash string) (*model.User, error) {
 	const q = `
 		INSERT INTO users (id, name, email, role, password_hash, created_at)
 		VALUES ($1, $2, $3, $4, $5, now())
 		RETURNING id, name, email, role, password_hash, created_at`
 
 	u := model.User{}
-	err := r.db.QueryRowxContext(ctx, q, uuid.New(), name, email, "viewer", passwordHash).StructScan(&u)
+	err := r.db.QueryRowxContext(ctx, q, uuid.New(), name, email, role, passwordHash).StructScan(&u)
 	if err != nil {
 		return nil, err
 	}

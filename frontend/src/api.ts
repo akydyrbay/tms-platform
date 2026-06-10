@@ -157,8 +157,8 @@ export interface CaseContent {
 // --- endpoints ---
 
 export const api = {
-  register: (name: string, email: string, password: string) =>
-    req<unknown>('POST', '/auth/register', { name, email, password }),
+  register: (name: string, email: string, password: string, role: string) =>
+    req<unknown>('POST', '/auth/register', { name, email, password, role }),
   login: (email: string, password: string) =>
     req<{ access_token: string }>('POST', '/auth/login', { email, password }),
 

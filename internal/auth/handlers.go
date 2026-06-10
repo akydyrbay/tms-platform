@@ -11,7 +11,7 @@ import (
 )
 
 type authSvc interface {
-	Register(ctx context.Context, name, email, password string) (*model.User, error)
+	Register(ctx context.Context, name, email, password, role string) (*model.User, error)
 	Login(ctx context.Context, email, password string) (string, error)
 }
 
@@ -30,7 +30,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.svc.Register(r.Context(), body.Name, body.Email, body.Password)
+	user, err := h.svc.Register(r.Context(), body.Name, body.Email, body.Password, body.Role)
 	if err != nil {
 		httputil.WriteJSON(w, http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		return
