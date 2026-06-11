@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import {
   api,
   type Bug,
-  type CaseSummary,
   type Run,
   type RunResult,
   type RunStats,
@@ -60,7 +59,6 @@ function BugCell({ resultId }: { resultId: string }) {
 export default function Runs({ projectId }: { projectId: string }) {
   const [runs, setRuns] = useState<Run[]>([])
   const [suites, setSuites] = useState<Suite[]>([])
-  const [cases, setCases] = useState<CaseSummary[]>([])
   const [name, setName] = useState('')
   const [suiteId, setSuiteId] = useState('')
   const [selected, setSelected] = useState<Run | null>(null)
@@ -73,7 +71,6 @@ export default function Runs({ projectId }: { projectId: string }) {
     try {
       setRuns(await api.listRuns(projectId))
       setSuites(await api.listSuites(projectId))
-      setCases(await api.listCases(projectId))
     } catch (err) {
       setError((err as Error).message)
     }
@@ -123,8 +120,6 @@ export default function Runs({ projectId }: { projectId: string }) {
     setSelected(updated)
     await load()
   }
-
-  const titleOf = (id: string) => cases.find((c) => c.test_case_id === id)?.title ?? id
 
   return (
     <div className="panel two-col">
@@ -184,9 +179,9 @@ export default function Runs({ projectId }: { projectId: string }) {
               <tbody>
                 {results.map((res) => (
                   <tr key={res.id}>
-                    <td>{titleOf(res.test_case_id)}</td>
+                    <td>{res.title}</td>
                     <td><span className={`badge ${res.status}`}>{res.status}</span></td>
-                    <td className="muted mono">{res.test_case_version_id.slice(0, 8)}</td>
+                    <td className="muted mono">v{res.version_number} · {res.test_case_version_id.slice(0, 8)}</td>
                     <td>
                       <input
                         placeholder="comment"

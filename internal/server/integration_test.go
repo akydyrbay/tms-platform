@@ -124,10 +124,10 @@ func TestWorkflow(t *testing.T) {
 		t.Fatalf("run should be frozen at v1 (%s), got %s", v1.ID, frozen[0].TestCaseVersionID)
 	}
 
-	// --- edit the case → creates v2 ---
+	// --- edit the case → creates v2, RENAMING the case (Login → Register) ---
 	var v2 model.TestCaseVersion
 	c.json("PUT", "/api/v1/test-cases/"+v1.TestCaseID, adminTok, map[string]any{
-		"title":    "Login works (updated)",
+		"title":    "Register works",
 		"priority": "high",
 		"steps":    []map[string]any{{"action": "New step", "expected_result": "ok"}},
 	}, http.StatusCreated, &v2)
@@ -135,10 +135,15 @@ func TestWorkflow(t *testing.T) {
 		t.Fatalf("edit should create v2 with new id, got version=%d id=%s", v2.VersionNumber, v2.ID)
 	}
 
-	// --- KEY INVARIANT: run still points at v1, not v2 ---
+	// --- KEY INVARIANT: run still points at v1, and reports v1's title/number,
+	// NOT the renamed current version ("Register works" / v2) ---
 	afterEdit := c.results(adminTok, run.ID)
 	if afterEdit[0].TestCaseVersionID != v1.ID {
 		t.Fatalf("FREEZE BROKEN: run moved to %s, expected frozen v1 %s", afterEdit[0].TestCaseVersionID, v1.ID)
+	}
+	if afterEdit[0].Title != "Login works" || afterEdit[0].VersionNumber != 1 {
+		t.Fatalf("FREEZE BROKEN: result should show frozen v1 title/number, got %q v%d",
+			afterEdit[0].Title, afterEdit[0].VersionNumber)
 	}
 
 	// --- RBAC: viewer cannot import CI results ---

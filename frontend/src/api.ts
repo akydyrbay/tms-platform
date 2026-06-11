@@ -120,6 +120,8 @@ export interface RunResult {
   comment?: string
   executed_by?: string
   executed_at?: string
+  title: string
+  version_number: number
 }
 
 export interface Bug {

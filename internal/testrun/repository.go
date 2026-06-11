@@ -93,12 +93,16 @@ func (r *Repository) ListByProject(ctx context.Context, projectID string) ([]mod
 
 func (r *Repository) ListResults(ctx context.Context, runID string) ([]model.TestRunResult, error) {
 	const q = `
-		SELECT id::text AS id, test_run_id::text AS test_run_id, test_case_id::text AS test_case_id,
-		       test_case_version_id::text AS test_case_version_id, status::text AS status,
-		       comment, executed_by::text AS executed_by, executed_at
-		FROM test_run_results
-		WHERE test_run_id = $1::uuid
-		ORDER BY test_case_id`
+		SELECT trr.id::text AS id, trr.test_run_id::text AS test_run_id,
+		       trr.test_case_id::text AS test_case_id,
+		       trr.test_case_version_id::text AS test_case_version_id,
+		       trr.status::text AS status, trr.comment,
+		       trr.executed_by::text AS executed_by, trr.executed_at,
+		       v.title AS title, v.version_number AS version_number
+		FROM test_run_results trr
+		JOIN test_case_versions v ON v.id = trr.test_case_version_id
+		WHERE trr.test_run_id = $1::uuid
+		ORDER BY trr.test_case_id`
 	results := make([]model.TestRunResult, 0)
 	if err := r.db.SelectContext(ctx, &results, q, runID); err != nil {
 		return nil, err

@@ -23,6 +23,8 @@ type TestRunResult struct {
 	Comment           *string    `json:"comment,omitempty" db:"comment"`
 	ExecutedBy        *string    `json:"executed_by,omitempty" db:"executed_by"`
 	ExecutedAt        *time.Time `json:"executed_at,omitempty" db:"executed_at"`
+	Title             string     `json:"title" db:"title"`
+	VersionNumber     int        `json:"version_number" db:"version_number"`
 }
 
 type TestRunStats struct {
